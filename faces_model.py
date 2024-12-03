@@ -2,31 +2,32 @@ import tensorflow as tf
 import numpy as np
 import os
 import zipfile
-import requests
-from io import BytesIO
+import gdown
 from PIL import Image
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
 
-# Google Drive direct download link
-DATASET_URL = "https://drive.google.com/uc?id=1JlOdCrFv4icuK1JrvUhHy6weGiUSWKzp"
-
+# Google Drive file ID
+DATASET_FILE_ID = "1JlOdCrFv4icuK1JrvUhHy6weGiUSWKzp"
 # Destination for downloaded dataset
 DATASET_PATH = "Person_Photos.zip"
 EXTRACT_PATH = "Person_Photos"
 
-# Download the dataset
-def download_dataset(url, destination):
+# Download the dataset using gdown
+def download_dataset(file_id, destination):
     print("Descargando dataset...")
-    response = requests.get(url)
-    with open(destination, 'wb') as f:
-        f.write(response.content)
+    url = f'https://drive.google.com/uc?id={file_id}'
+    gdown.download(url, destination, quiet=False)
     print("Descarga completada.")
 
 # Extract the ZIP file
 def extract_dataset(zip_path, extract_path):
     print("Descomprimiendo dataset...")
+    # Ensure extraction directory exists
+    os.makedirs(extract_path, exist_ok=True)
+    
+    # Extract the zip file
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(extract_path)
     print("Descompresión completada.")
@@ -38,6 +39,11 @@ def load_and_preprocess_images(directory, classes):
     
     for i, class_name in enumerate(classes):
         class_path = os.path.join(directory, class_name)
+        # Check if directory exists
+        if not os.path.exists(class_path):
+            print(f"Warning: Directory {class_path} does not exist!")
+            continue
+        
         for img_name in os.listdir(class_path):
             img_path = os.path.join(class_path, img_name)
             try:
@@ -55,7 +61,7 @@ def load_and_preprocess_images(directory, classes):
     return np.array(images), np.array(labels)
 
 # Download and extract dataset
-download_dataset(DATASET_URL, DATASET_PATH)
+download_dataset(DATASET_FILE_ID, DATASET_PATH)
 extract_dataset(DATASET_PATH, EXTRACT_PATH)
 
 # Classes
@@ -63,6 +69,10 @@ classes = ["Enigma", "Nayelli"]
 
 # Load images
 X, y = load_and_preprocess_images(EXTRACT_PATH, classes)
+
+# Check if we have images
+if len(X) == 0:
+    raise ValueError("No se encontraron imágenes. Verifica la ruta del dataset y los nombres de las clases.")
 
 # Split the data
 X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -125,8 +135,15 @@ print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 export_path = 'faces-model/1'
 os.makedirs(export_path, exist_ok=True)
 
-# Save the model in SavedModel format
-tf.saved_model.save(modelo, export_path)
+# Create a concrete function for serving
+@tf.function(input_signature=[tf.TensorSpec(shape=(None, 28, 28, 1), dtype=tf.float32)])
+def serve(input_data):
+    return {"outputs": modelo(input_data)}
+
+# Save the model with a concrete function for serving
+tf.saved_model.save(modelo, export_path, signatures={
+    'serving_default': serve
+})
 
 print(f"Model exported to {export_path}")
 
