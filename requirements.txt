@@ -8,3 +8,5 @@ tensorflow-datasets
 pandas
 scikit-learn
 matplotlib
+gdown
+Pillow
