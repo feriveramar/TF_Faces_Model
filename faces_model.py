@@ -1,10 +1,22 @@
 import tensorflow as tf
-import os
 import numpy as np
+import os
+import gdown
+import zipfile
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+# Descarga y descomprime el archivo de Google Drive
+DATASET_FILE_ID = "1uKf8MMAmM53MfKC8wA81PXER490oF25Q"
+gdown.download(f"https://drive.google.com/uc?id={DATASET_FILE_ID}", 'dataset.zip', quiet=False)
+
+with zipfile.ZipFile('dataset.zip', 'r') as zip_ref:
+    zip_ref.extractall('caras_fotos')
+
+# Ruta a tu dataset
+base_dir = 'caras_fotos'
 
 # Clases del dataset
 mi_clases = ['Enigma', 'Nayelli']
@@ -46,10 +58,6 @@ print(X.shape, y.shape)
 
 # Dividir los datos
 X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Normalizar
-X_train = X_train.astype('float32') / 255
-X_test = X_test.astype('float32') / 255
 
 # Aumento de datos
 datagen = ImageDataGenerator(
