@@ -15,8 +15,9 @@ gdown.download(f"https://drive.google.com/uc?id={DATASET_FILE_ID}", 'dataset.zip
 with zipfile.ZipFile('dataset.zip', 'r') as zip_ref:
     zip_ref.extractall('caras_fotos')
 
-# Ruta a tu dataset
+# Verifica la estructura del directorio
 base_dir = 'caras_fotos'
+print("Contenido de la carpeta 'caras_fotos':", os.listdir(base_dir))
 
 # Clases del dataset
 mi_clases = ['Enigma', 'Nayelli']
@@ -24,6 +25,7 @@ mi_clases = ['Enigma', 'Nayelli']
 TAMANO_IMG = 100  # Tamaño al que redimensionaremos las imágenes
 
 def load_and_preprocess_image(file_path, label):
+    file_path = tf.cast(file_path, tf.string)
     img = tf.io.read_file(file_path)
     img = tf.image.decode_jpeg(img, channels=3)  # Usa channels=3 para imágenes en color
     img = tf.image.resize(img, [TAMANO_IMG, TAMANO_IMG])
