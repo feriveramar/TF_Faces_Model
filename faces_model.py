@@ -1,24 +1,10 @@
 import tensorflow as tf
-import numpy as np
 import os
-import gdown
+import numpy as np
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
-from PIL import Image
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import zipfile
-
-# ID del archivo en Google Drive
-DATASET_FILE_ID = "1uKf8MMAmM53MfKC8wA81PXER490oF25Q"
-gdown.download(f"https://drive.google.com/uc?id={DATASET_FILE_ID}", 'dataset.zip', quiet=False)
-
-# Descomprimir el archivo zip
-with zipfile.ZipFile('dataset.zip', 'r') as zip_ref:
-    zip_ref.extractall('caras_fotos')
-
-# Ruta a tu dataset
-base_dir = 'caras_fotos'  # Asegúrate de que esta ruta sea correcta
 
 # Clases del dataset
 mi_clases = ['Enigma', 'Nayelli']
@@ -37,10 +23,13 @@ labels = []
 
 for i, mi_clase in enumerate(mi_clases):
     class_dir = os.path.join(base_dir, mi_clase)
-    for img_path in os.listdir(class_dir):
-        full_path = os.path.join(class_dir, img_path)
-        image_paths.append(full_path)
-        labels.append(i)
+    if not os.path.exists(class_dir):
+        print(f"No se encontró la carpeta: {class_dir}")
+    else:
+        for img_path in os.listdir(class_dir):
+            full_path = os.path.join(class_dir, img_path)
+            image_paths.append(full_path)
+            labels.append(i)
 
 dataset = tf.data.Dataset.from_tensor_slices((image_paths, labels))
 dataset = dataset.map(load_and_preprocess_image)
