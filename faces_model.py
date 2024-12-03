@@ -1,119 +1,94 @@
 import tensorflow as tf
 import numpy as np
 import os
-import zipfile
 import gdown
-from PIL import Image
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
+from PIL import Image
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import zipfile
 
-# Google Drive file ID
+# ID del archivo en Google Drive
 DATASET_FILE_ID = "1uKf8MMAmM53MfKC8wA81PXER490oF25Q"
-# Destination for downloaded dataset
-DATASET_PATH = "caras_fotos.zip"
-EXTRACT_PATH = "caras_fotos"
+gdown.download(f"https://drive.google.com/uc?id={DATASET_FILE_ID}", 'dataset.zip', quiet=False)
 
-# Download the dataset using gdown
-def download_dataset(file_id, destination):
-    print("Descargando dataset...")
-    url = f'https://drive.google.com/uc?id={file_id}'
-    gdown.download(url, destination, quiet=False)
-    print("Descarga completada.")
+# Descomprimir el archivo zip
+with zipfile.ZipFile('dataset.zip', 'r') as zip_ref:
+    zip_ref.extractall('caras_fotos')
 
-# Extract the ZIP file
-def extract_dataset(zip_path, extract_path):
-    print("Descomprimiendo dataset...")
-    # Ensure extraction directory exists
-    os.makedirs(extract_path, exist_ok=True)
-    
-    # Extract the zip file
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(extract_path)
-    print("Descompresión completada.")
+# Ruta a tu dataset
+base_dir = 'caras_fotos'  # Asegúrate de que esta ruta sea correcta
 
-# Function to load and preprocess images
-def load_and_preprocess_images(directory, classes):
-    images = []
-    labels = []
-    
-    for i, class_name in enumerate(classes):
-        class_path = os.path.join(directory, class_name)
-        # Check if directory exists
-        if not os.path.exists(class_path):
-            print(f"Warning: Directory {class_path} does not exist!")
-            continue
-        
-        for img_name in os.listdir(class_path):
-            img_path = os.path.join(class_path, img_name)
-            try:
-                # Open image and convert to grayscale
-                img = Image.open(img_path).convert('L')
-                # Resize to 28x28 to match MNIST model
-                img = img.resize((28, 28))
-                # Convert to numpy array
-                img_array = np.array(img)
-                images.append(img_array)
-                labels.append(i)
-            except Exception as e:
-                print(f"Error processing {img_path}: {e}")
-    
-    return np.array(images), np.array(labels)
+# Clases del dataset
+mi_clases = ['Enigma', 'Nayelli']
 
-# Download and extract dataset
-download_dataset(DATASET_FILE_ID, DATASET_PATH)
-extract_dataset(DATASET_PATH, EXTRACT_PATH)
+TAMANO_IMG = 100  # Tamaño al que redimensionaremos las imágenes
 
-# Classes
-classes = ["Enigma", "Nayelli"]
+def load_and_preprocess_image(file_path, label):
+    img = tf.io.read_file(file_path)
+    img = tf.image.decode_jpeg(img, channels=3)  # Usa channels=3 para imágenes en color
+    img = tf.image.resize(img, [TAMANO_IMG, TAMANO_IMG])
+    img = img / 255.0  # Normaliza a [0, 1]
+    return img, label
 
-# Load images
-X, y = load_and_preprocess_images(EXTRACT_PATH, classes)
+image_paths = []
+labels = []
 
-# Check if we have images
-if len(X) == 0:
-    raise ValueError("No se encontraron imágenes. Verifica la ruta del dataset y los nombres de las clases.")
+for i, mi_clase in enumerate(mi_clases):
+    class_dir = os.path.join(base_dir, mi_clase)
+    for img_path in os.listdir(class_dir):
+        full_path = os.path.join(class_dir, img_path)
+        image_paths.append(full_path)
+        labels.append(i)
 
-# Split the data
+dataset = tf.data.Dataset.from_tensor_slices((image_paths, labels))
+dataset = dataset.map(load_and_preprocess_image)
+
+# Convertir el dataset a listas y luego a arrays numpy
+dataset_list = list(dataset)
+X = np.array([img.numpy() for img, _ in dataset_list])
+y = np.array([label.numpy() for _, label in dataset_list])
+
+# Convertir las etiquetas a categorías
+y = tf.keras.utils.to_categorical(y, num_classes=len(mi_clases))
+
+print(X.shape, y.shape)
+
+# Dividir los datos
 X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Reshape and normalize
-X_train = X_train.reshape(X_train.shape[0], 28, 28, 1).astype('float32') / 255
-X_test = X_test.reshape(X_test.shape[0], 28, 28, 1).astype('float32') / 255
+# Normalizar
+X_train = X_train.astype('float32') / 255
+X_test = X_test.astype('float32') / 255
 
-# One-hot encode labels
-Y_train = to_categorical(Y_train, num_classes=len(classes))
-Y_test = to_categorical(Y_test, num_classes=len(classes))
-
-# Data Augmentation
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-
+# Aumento de datos
 datagen = ImageDataGenerator(
     rotation_range=30,
     width_shift_range=0.25,
     height_shift_range=0.25,
-    zoom_range=[0.5,1.5]
+    zoom_range=[0.5, 1.5]
 )
 datagen.fit(X_train)
 
-# Model Architecture
+# Arquitectura del modelo
 modelo = tf.keras.models.Sequential([
-    tf.keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(28, 28, 1)),
+    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(TAMANO_IMG, TAMANO_IMG, 3)),
     tf.keras.layers.MaxPooling2D(2, 2),
-    tf.keras.layers.Conv2D(64, (3,3), activation='relu'),
-    tf.keras.layers.MaxPooling2D(2,2),
+    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(2, 2),
     tf.keras.layers.Dropout(0.5),
     tf.keras.layers.Flatten(),
     tf.keras.layers.Dense(100, activation='relu'),
-    tf.keras.layers.Dense(len(classes), activation="softmax")
+    tf.keras.layers.Dense(len(mi_clases), activation='softmax')
 ])
 
-# Compilation
+# Compilación del modelo
 modelo.compile(optimizer='adam',
                loss='categorical_crossentropy',
                metrics=['accuracy'])
 
-# Training with data augmentation
+# Entrenamiento con aumento de datos
 data_gen_entrenamiento = datagen.flow(X_train, Y_train, batch_size=32)
 
 print("Entrenando modelo...")
@@ -126,28 +101,25 @@ history = modelo.fit(
     validation_steps=int(np.ceil(X_test.shape[0] / float(32)))
 )
 
-# Evaluation
+# Evaluación
 test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
-# Export for TensorFlow Serving
-# Create a directory structure for TF Serving
+# Exportar para TensorFlow Serving
 export_path = 'faces-model/1'
 os.makedirs(export_path, exist_ok=True)
 
-# Create a concrete function for serving
-@tf.function(input_signature=[tf.TensorSpec(shape=(None, 28, 28, 1), dtype=tf.float32)])
+@tf.function(input_signature=[tf.TensorSpec(shape=(None, TAMANO_IMG, TAMANO_IMG, 3), dtype=tf.float32)])
 def serve(input_data):
     return {"outputs": modelo(input_data)}
 
-# Save the model with a concrete function for serving
 tf.saved_model.save(modelo, export_path, signatures={
     'serving_default': serve
 })
 
 print(f"Model exported to {export_path}")
 
-# Optional: Plot training history
+# Gráfica de la historia de entrenamiento
 plt.plot(history.history['accuracy'], label='Training Accuracy')
 plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
 plt.title('Model Accuracy')
