@@ -9,10 +9,10 @@ from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
 
 # Google Drive file ID
-DATASET_FILE_ID = "1JlOdCrFv4icuK1JrvUhHy6weGiUSWKzp"
+DATASET_FILE_ID = "1uKf8MMAmM53MfKC8wA81PXER490oF25Q"
 # Destination for downloaded dataset
-DATASET_PATH = "Person_Photos.zip"
-EXTRACT_PATH = "Person_Photos"
+DATASET_PATH = "caras_fotos.zip"
+EXTRACT_PATH = "caras_fotos"
 
 # Download the dataset using gdown
 def download_dataset(file_id, destination):
