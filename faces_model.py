@@ -83,12 +83,12 @@ history = modelo.fit(
 test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
-export_dir = 'models/reconocimiento-rostro/1/'  
+export_dir = 'reconocimiento-rostro/1/'  
 os.makedirs(export_dir, exist_ok=True)  
 
 tf.saved_model.save(modelo, export_dir)
 
-for root, dirs, files in os.walk('models/reconocimiento-rostro'):
+for root, dirs, files in os.walk('reconocimiento-rostro'):
     print(root)
     for file in files:
         print(f"  - {file}")
