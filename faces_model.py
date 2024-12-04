@@ -94,18 +94,27 @@ test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
 # Exportar para TensorFlow Serving
-export_path = 'faces-model/1'
-os.makedirs(export_path, exist_ok=True)
+export_dir = 'flowers-model/1'
+os.makedirs(export_dir, exist_ok=True)
 
+# Define la función de servicio
 @tf.function(input_signature=[tf.TensorSpec(shape=(None, TAMANO_IMG, TAMANO_IMG, 3), dtype=tf.float32)])
 def serve(input_data):
     return {"outputs": modelo(input_data)}
 
-tf.saved_model.save(modelo, export_path, signatures={
-    'serving_default': serve
-})
+# Guarda el modelo
+tf.saved_model.save(modelo, export_dir, signatures={'serving_default': serve})
 
-print(f"Model exported to {export_path}")
+print(f"\nModel saved to: {export_dir}")
+print("Contents of the export directory:")
+for root, dirs, files in os.walk(export_dir):
+    for file in files:
+        print(os.path.join(root, file))
+
+# Guarda los nombres de las clases en un archivo
+with open(os.path.join(export_dir, 'class_names.txt'), 'w') as f:
+    for cls in flower_classes:
+        f.write(f"{cls}\n")
 
 # Gráfica de la historia de entrenamiento
 plt.plot(history.history['accuracy'], label='Training Accuracy')
