@@ -88,7 +88,7 @@ os.makedirs(export_dir, exist_ok=True)
 
 tf.saved_model.save(modelo, export_dir)
 
-for root, dirs, files in os.walk('models/faces-model'):
+for root, dirs, files in os.walk('models/reconocimiento-rostro'):
     print(root)
     for file in files:
         print(f"  - {file}")
