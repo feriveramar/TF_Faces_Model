@@ -94,11 +94,16 @@ test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
 # Guardar el modelo en la ruta especificada
-export_dir = 'reconocimiento-facial/1/'  # Asegúrate de que esta ruta sea válida
+export_dir = 'models/reconocimiento-facial/1/'  # Asegúrate de que esta ruta sea válida
 os.makedirs(export_dir, exist_ok=True)  # Crear la carpeta si no existe
 
 # Cambiar tf.keras.models.save_model por tf.saved_model.save
 tf.saved_model.save(modelo, export_dir)
+
+for root, dirs, files in os.walk('models/faces-model'):
+    print(root)
+    for file in files:
+        print(f"  - {file}")
 
 print("Verificando estructura del modelo:")
 for root, dirs, files in os.walk(export_dir):
