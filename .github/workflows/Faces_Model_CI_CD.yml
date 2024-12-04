@@ -39,6 +39,11 @@ jobs:
     - name: Show model directory
       run: ls -la reconocimiento-facial/1/
 
+    - name: Move model to correct directory
+      run: |
+        mkdir -p /models/faces-model/1
+        mv reconocimiento-facial/1/* /models/faces-model/1/
+
     - name: Docker login
       env:
         DOCKER_USER: ${{ secrets.DOCKER_USER }}
