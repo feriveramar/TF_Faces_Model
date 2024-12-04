@@ -93,8 +93,11 @@ history = modelo.fit(
 test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
-export_dir = 'reconocimiento-facial/1/'
-tf.keras.models.save_model(modelo, os.path.join('./', export_path))
+# Guardar el modelo en la ruta especificada
+export_dir = 'reconocimiento-facial/1/'  # Asegúrate de que esta ruta sea válida
+os.makedirs(export_dir, exist_ok=True)  # Crear la carpeta si no existe
+
+tf.keras.models.save_model(modelo, export_dir)
 
 # Verifica el contenido del directorio
 print("Contenido del directorio exportado:")
