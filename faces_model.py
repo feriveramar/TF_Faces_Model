@@ -5,6 +5,7 @@ import tensorflow as tf
 import numpy as np
 import cv2
 import os
+import datetime
 
 TAMANO_IMG = 128
 mi_clases = ['Enigma', 'Nayelli']  
@@ -17,6 +18,7 @@ def load_and_preprocess_image(file_path, label):
     img = img / 255.0 
     return img, label
 
+# Carga de imágenes
 image_paths = []
 labels = []
 base_dir = 'caras_fotos'  
@@ -42,8 +44,10 @@ y = tf.keras.utils.to_categorical(y, num_classes=len(mi_clases))
 
 print(X.shape, y.shape)
 
+# División del conjunto de datos
 X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
+# Data augmentation
 datagen = ImageDataGenerator(
     rotation_range=30,
     width_shift_range=0.25,
@@ -52,6 +56,7 @@ datagen = ImageDataGenerator(
 )
 datagen.fit(X_train)
 
+# Modelo
 modelo = tf.keras.models.Sequential([
     tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(TAMANO_IMG, TAMANO_IMG, 3)),
     tf.keras.layers.MaxPooling2D(2, 2),
@@ -69,6 +74,7 @@ modelo.compile(optimizer='adam',
 
 data_gen_entrenamiento = datagen.flow(X_train, Y_train, batch_size=32)
 
+# Entrenamiento
 print("Entrenando modelo...")
 epocas = 60
 history = modelo.fit(
@@ -79,34 +85,30 @@ history = modelo.fit(
     validation_steps=int(np.ceil(X_test.shape[0] / float(32)))
 )
 
+# Evaluación
 test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
-export_dir = 'models/faces-model/1/'  
+# Guardar modelo con un nombre único
+timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+export_dir = f'models/faces-model/{timestamp}/'
 os.makedirs(export_dir, exist_ok=True)  
 
+# Guardar el modelo y las clases
 tf.saved_model.save(modelo, export_dir)
-
-for root, dirs, files in os.walk('models/faces-model'):
-    print(root)
-    for file in files:
-        print(f"  - {file}")
-
-print("Verificando estructura del modelo:")
-for root, dirs, files in os.walk(export_dir):
-    print(root)
-    for file in files:
-        print(f"  - {file}")
-
-print("Contenido del directorio exportado:")
-for root, dirs, files in os.walk(export_dir):
-    for file in files:
-        print(os.path.join(root, file))
 
 with open(os.path.join(export_dir, 'class_names.txt'), 'w') as f:
     for cls in mi_clases:
         f.write(f"{cls}\n")
 
+# Confirmar estructura de directorios
+print("Estructura final del directorio exportado:")
+for root, dirs, files in os.walk(export_dir):
+    print(root)
+    for file in files:
+        print(f"  - {file}")
+
+# Gráfica de desempeño
 plt.plot(history.history['accuracy'], label='Training Accuracy')
 plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
 plt.title('Model Accuracy')
