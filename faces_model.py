@@ -93,7 +93,7 @@ history = modelo.fit(
 test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
-export_dir = 'faces-model/1'  # Asegúrate de que este sea el nombre que deseas
+export_dir = 'faces-model/1'  # Cambia el nombre a 'faces-model/1'
 os.makedirs(export_dir, exist_ok=True)
 
 # Define la función de servicio
@@ -102,9 +102,13 @@ def serve(input_data):
     return {"outputs": modelo(input_data)}
 
 # Guarda el modelo
-tf.saved_model.save(modelo, export_dir, signatures={'serving_default': serve})
+try:
+    tf.saved_model.save(modelo, export_dir, signatures={'serving_default': serve})
+    print(f"\nModel saved to: {export_dir}")
+except Exception as e:
+    print(f"Error al guardar el modelo: {e}")
 
-print(f"\nModel saved to: {export_dir}")
+# Verifica el contenido del directorio
 print("Contents of the export directory:")
 for root, dirs, files in os.walk(export_dir):
     for file in files:
