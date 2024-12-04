@@ -82,7 +82,7 @@ history = modelo.fit(
 test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
-export_dir = 'models/reconocimiento-facial/1/'  
+export_dir = 'models/faces-model/1/'  
 os.makedirs(export_dir, exist_ok=True)  
 
 tf.saved_model.save(modelo, export_dir)
