@@ -101,6 +101,12 @@ os.makedirs(export_dir, exist_ok=True)
 def serve(input_data):
     return {"outputs": modelo(input_data)}
 
+original_model_dir = '***' 
+if os.path.exists(original_model_dir):
+    new_model_dir = 'faces-model'
+    os.rename(original_model_dir, new_model_dir)
+    print(f"Model directory renamed")
+
 # Guarda el modelo
 try:
     tf.saved_model.save(modelo, export_dir, signatures={'serving_default': serve})
