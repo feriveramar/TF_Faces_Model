@@ -94,7 +94,7 @@ test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
 export_dir = 'reconocimiento-facial/1/'
-tf.keras.models.save_model(model, os.path.join('./', export_path))
+tf.keras.models.save_model(modelo, os.path.join('./', export_path))
 
 # Verifica el contenido del directorio
 print("Contenido del directorio exportado:")
