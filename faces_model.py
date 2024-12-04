@@ -93,8 +93,7 @@ history = modelo.fit(
 test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
-# Exportar para TensorFlow Serving
-export_dir = 'faces-model/1'
+export_dir = 'faces-model/1'  # Asegúrate de que este sea el nombre que deseas
 os.makedirs(export_dir, exist_ok=True)
 
 # Define la función de servicio
