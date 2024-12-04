@@ -97,7 +97,14 @@ print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 export_dir = 'reconocimiento-facial/1/'  # Asegúrate de que esta ruta sea válida
 os.makedirs(export_dir, exist_ok=True)  # Crear la carpeta si no existe
 
-tf.keras.models.save_model(modelo, export_dir)
+# Cambiar tf.keras.models.save_model por tf.saved_model.save
+tf.saved_model.save(modelo, export_dir)
+
+print("Verificando estructura del modelo:")
+for root, dirs, files in os.walk(export_dir):
+    print(root)
+    for file in files:
+        print(f"  - {file}")
 
 # Verifica el contenido del directorio
 print("Contenido del directorio exportado:")
