@@ -1,29 +1,15 @@
 import tensorflow as tf
+import cv2
 import numpy as np
 import os
-import gdown
-import zipfile
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.utils import to_categorical
-import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-# Descarga y descomprime el archivo de Google Drive
-DATASET_FILE_ID = "1uKf8MMAmM53MfKC8wA81PXER490oF25Q"
-gdown.download(f"https://drive.google.com/uc?id={DATASET_FILE_ID}", 'dataset.zip', quiet=False)
+# Define el tamaño de las imágenes y las clases
+TAMANO_IMG = 128
+mi_clases = ['Enigma', 'Nayelli']  # Cambia esto con los nombres de tus clases
 
-with zipfile.ZipFile('dataset.zip', 'r') as zip_ref:
-    zip_ref.extractall('caras_fotos')
-
-# Verifica la estructura del directorio
-base_dir = 'caras_fotos'
-print("Contenido de la carpeta 'caras_fotos':", os.listdir(base_dir))
-
-# Clases del dataset
-mi_clases = ['Enigma', 'Nayelli']
-
-TAMANO_IMG = 100  # Tamaño al que redimensionaremos las imágenes
-
+# Función para cargar y preprocesar imágenes
 def load_and_preprocess_image(file_path, label):
     file_path = tf.cast(file_path, tf.string)
     img = tf.io.read_file(file_path)
@@ -32,8 +18,10 @@ def load_and_preprocess_image(file_path, label):
     img = img / 255.0  # Normaliza a [0, 1]
     return img, label
 
+# Cargar rutas de imágenes y etiquetas
 image_paths = []
 labels = []
+base_dir = 'caras_fotos'  # Directorio base después de extraer el dataset
 
 for i, mi_clase in enumerate(mi_clases):
     class_dir = os.path.join(base_dir, mi_clase)
