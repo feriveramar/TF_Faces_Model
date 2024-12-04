@@ -93,17 +93,8 @@ history = modelo.fit(
 test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
-base_model_dir = 'faces-model'  # Ruta base para TensorFlow Serving
-version = '1'  # Número de versión del modelo
-export_dir = os.path.join(base_model_dir, version)
-os.makedirs(export_dir, exist_ok=True)
-
-# Guarda el modelo en la estructura requerida
-try:
-    tf.saved_model.save(modelo, export_dir)
-    print(f"\nModelo guardado exitosamente en: {export_dir}")
-except Exception as e:
-    print(f"Error al guardar el modelo: {e}")
+export_dir = 'reconocimiento-facial/1/'
+tf.keras.models.save_model(model, os.path.join('./', export_path))
 
 # Verifica el contenido del directorio
 print("Contenido del directorio exportado:")
