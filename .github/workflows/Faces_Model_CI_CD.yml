@@ -37,7 +37,7 @@ jobs:
       run: ls -R
 
     - name: Show model directory
-      run: ls -la faces-model/1/
+      run: ls -la reconocimiento-facial/1/
 
     - name: Docker login
       env:
