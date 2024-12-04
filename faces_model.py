@@ -93,29 +93,19 @@ history = modelo.fit(
 test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
-export_dir = 'faces-model/1'  # Cambia el nombre a 'faces-model/1'
+# Directorio para guardar el modelo
+export_dir = 'faces-model/1'
 os.makedirs(export_dir, exist_ok=True)
 
-# Define la función de servicio
-@tf.function(input_signature=[tf.TensorSpec(shape=(None, TAMANO_IMG, TAMANO_IMG, 3), dtype=tf.float32)])
-def serve(input_data):
-    return {"outputs": modelo(input_data)}
-
-original_model_dir = '***' 
-if os.path.exists(original_model_dir):
-    new_model_dir = 'faces-model'
-    os.rename(original_model_dir, new_model_dir)
-    print(f"Model directory renamed")
-
-# Guarda el modelo
+# Guarda el modelo sin usar la función `serve`
 try:
-    tf.saved_model.save(modelo, export_dir, signatures={'serving_default': serve})
-    print(f"\nModel saved to: {export_dir}")
+    tf.saved_model.save(modelo, export_dir)
+    print(f"\nModelo guardado exitosamente en: {export_dir}")
 except Exception as e:
     print(f"Error al guardar el modelo: {e}")
 
 # Verifica el contenido del directorio
-print("Contents of the export directory:")
+print("Contenido del directorio exportado:")
 for root, dirs, files in os.walk(export_dir):
     for file in files:
         print(os.path.join(root, file))
