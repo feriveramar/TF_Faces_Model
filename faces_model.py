@@ -113,7 +113,7 @@ for root, dirs, files in os.walk(export_dir):
 
 # Guarda los nombres de las clases en un archivo
 with open(os.path.join(export_dir, 'class_names.txt'), 'w') as f:
-    for cls in flower_classes:
+    for cls in mi_clases:
         f.write(f"{cls}\n")
 
 # Gráfica de la historia de entrenamiento
