@@ -3,7 +3,6 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
-import shutil  # Importa shutil para mover archivos
 import cv2
 import os
 
@@ -95,7 +94,7 @@ test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
 # Guardar el modelo en la ruta especificada
-export_dir = 'reconocimiento-facial/1/'  # Asegúrate de que esta ruta sea válida
+export_dir = 'models/faces-model/1/'  # Asegúrate de que esta ruta sea válida
 os.makedirs(export_dir, exist_ok=True)  # Crear la carpeta si no existe
 
 # Cambiar tf.keras.models.save_model por tf.saved_model.save
@@ -117,11 +116,6 @@ for root, dirs, files in os.walk(export_dir):
 with open(os.path.join(export_dir, 'class_names.txt'), 'w') as f:
     for cls in mi_clases:
         f.write(f"{cls}\n")
-
-# Mover el modelo a la ubicación deseada
-destino = 'models/faces-model/1/'  # Cambia esto a la ruta donde deseas mover el modelo
-os.makedirs(destino, exist_ok=True)  # Crear la carpeta si no existe
-shutil.move(export_dir, destino)  # Mover el directorio del modelo
 
 # Gráfica de la historia de entrenamiento
 plt.plot(history.history['accuracy'], label='Training Accuracy')
