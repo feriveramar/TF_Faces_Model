@@ -93,11 +93,12 @@ history = modelo.fit(
 test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
-# Directorio para guardar el modelo
-export_dir = 'faces-model/1'
+base_model_dir = '/models/faces-model'  # Ruta base para TensorFlow Serving
+version = '1'  # Número de versión del modelo
+export_dir = os.path.join(base_model_dir, version)
 os.makedirs(export_dir, exist_ok=True)
 
-# Guarda el modelo sin usar la función `serve`
+# Guarda el modelo en la estructura requerida
 try:
     tf.saved_model.save(modelo, export_dir)
     print(f"\nModelo guardado exitosamente en: {export_dir}")
