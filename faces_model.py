@@ -117,6 +117,11 @@ with open(os.path.join(export_dir, 'class_names.txt'), 'w') as f:
     for cls in mi_clases:
         f.write(f"{cls}\n")
 
+# Mover el modelo a la ubicación deseada
+destino = 'models/faces-model/1/'  # Cambia esto a la ruta donde deseas mover el modelo
+os.makedirs(destino, exist_ok=True)  # Crear la carpeta si no existe
+shutil.move(export_dir, destino)  # Mover el directorio del modelo
+
 # Gráfica de la historia de entrenamiento
 plt.plot(history.history['accuracy'], label='Training Accuracy')
 plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
