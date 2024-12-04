@@ -1,10 +1,11 @@
-import tensorflow as tf
-import cv2
-import numpy as np
-import os
-from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import tensorflow as tf
+import numpy as np
+import shutil  # Importa shutil para mover archivos
+import cv2
+import os
 
 # Define el tamaño de las imágenes y las clases
 TAMANO_IMG = 128
