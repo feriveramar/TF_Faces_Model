@@ -4,6 +4,7 @@ import numpy as np
 import os
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import matplotlib.pyplot as plt
 
 # Define el tamaño de las imágenes y las clases
 TAMANO_IMG = 128
