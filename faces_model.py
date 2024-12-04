@@ -93,7 +93,7 @@ history = modelo.fit(
 test_loss, test_accuracy = modelo.evaluate(X_test, Y_test)
 print(f"Test accuracy: {test_accuracy * 100:.2f}%")
 
-base_model_dir = '/models/faces-model'  # Ruta base para TensorFlow Serving
+base_model_dir = 'faces-model'  # Ruta base para TensorFlow Serving
 version = '1'  # Número de versión del modelo
 export_dir = os.path.join(base_model_dir, version)
 os.makedirs(export_dir, exist_ok=True)
