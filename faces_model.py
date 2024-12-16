@@ -8,7 +8,7 @@ import cv2
 import os
 
 TAMANO_IMG = 128
-mi_clases = ['Enigma', 'Nayelli']  
+mi_clases = ['sakura', 'agustin']  
 
 def load_and_preprocess_image(file_path, label):
     file_path = tf.cast(file_path, tf.string)
