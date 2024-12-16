@@ -12,7 +12,7 @@ def prepare_image(image_path):
     img = np.expand_dims(img, axis=0)  
     return img.tolist() 
 
-image_path = 'Enigma.jpg'  
+image_path = 'sakura.jpg'  
 
 input_data = prepare_image(image_path)
 
