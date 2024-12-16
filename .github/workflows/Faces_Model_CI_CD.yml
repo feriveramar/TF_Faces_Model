@@ -24,8 +24,9 @@ jobs:
 
     - name: Download dataset from Google Drive
       run: |
-        gdown --id 1p-PuVCJJDDl_CCyRIN0WVw-DVSeyRiWB
-        tar -xzvf caras_fotos.tgz
+       gdown --id 14ggF8_oQ-viIQD-njwpx9AaWCrAlMw3_
+       tar -xzvf caras_fotos.tgz
+
 
     - name: Execute model training
       run: python faces_model.py
