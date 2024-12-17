@@ -32,18 +32,29 @@ jobs:
       - name: Execute model training
         run: python faces_model.py
 
+      - name: Inspect model directory
+        run: |
+          echo "Inspecting model directory after training..."
+          ls -R faces-model/
+
       - name: Prepare model directory with versioning
         run: |
-          echo "Creating versioned model directory..."
+          echo "Locating saved_model.pb and preparing versioned directory..."
           mkdir -p faces-model/1
-          mv faces-model/saved_model.pb faces-model/1/
-          mv faces-model/variables faces-model/1/
+          SAVED_MODEL_PATH=$(find faces-model/ -name "saved_model.pb" -printf '%h\n' | head -n 1)
+          if [ -z "$SAVED_MODEL_PATH" ]; then
+            echo "Error: saved_model.pb not found!"
+            exit 1
+          fi
+          echo "Found model at: $SAVED_MODEL_PATH"
+          cp -r $SAVED_MODEL_PATH/* faces-model/1/
           ls -R faces-model/
 
       - name: Validate model directory
         run: |
           echo "Validating trained model directory..."
           ls -R faces-model/
+
       - name: Show root directory
         run: ls -la
 
@@ -53,7 +64,7 @@ jobs:
       - name: Copy model to the Docker image
         run: |
           echo "Copying model to Docker container..."
-          docker cp faces-model/ serving_base:/models/model_faces
+          docker cp faces-model/1/ serving_base:/models/model_faces
 
       - name: Build the custom Docker image
         run: |
