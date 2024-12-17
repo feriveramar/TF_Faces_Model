@@ -2,60 +2,65 @@ name: Train and Deploy Faces Model
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]  
+    branches: [ main ]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: hello-world
-      run: echo "hello world workflows …"
-    - name: show python version
-      run: python --version
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - uses: actions/checkout@v2
 
-    - name: Download dataset from Google Drive
-      run: |
-       gdown --id 14ggF8_oQ-viIQD-njwpx9AaWCrAlMw3_
-       tar -xzvf caras_fotos.tgz
+      - name: Hello world
+        run: echo "hello world workflows …"
 
+      - name: Show Python version
+        run: python --version
 
-    - name: Execute model training
-      run: python faces_model.py
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Show root directory
-      run: ls -la
+      - name: Download dataset from Google Drive
+        run: |
+          gdown --id 14ggF8_oQ-viIQD-njwpx9AaWCrAlMw3_
+          tar -xzvf caras_fotos.tgz
 
-    - name: List directory
-      run: ls -R
+      - name: Execute model training
+        run: python faces_model.py
 
-    - name: Show model directory
-      run: ls -la faces-model/1/
+      - name: Validate model directory
+        run: |
+          echo "Validating trained model directory..."
+          ls -R faces-model/
 
-    - name: Docker login
-      env:
-        DOCKER_USER: ${{ secrets.DOCKER_USER }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Show root directory
+        run: ls -la
 
-      run: |
-        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: Download and run the Docker base image
+        run: docker run -d --name serving_base tensorflow/serving
 
-    - name: Download and run the Docker base image
-      run: docker run -d --name serving_base tensorflow/serving
+      - name: Copy model to the Docker image
+        run: |
+          echo "Copying model to Docker container..."
+          docker cp faces-model/1/ serving_base:/models/model_faces
 
-    - name: copy model to the Docker image
-      run: docker cp ${{secrets.MODEL_NAME}} serving_base:/models/${{secrets.MODEL_NAME}}
+      - name: Build the custom Docker image
+        run: |
+          echo "Building Docker image..."
+          docker commit --change "ENV MODEL_NAME model_faces" serving_base ${{ secrets.DOCKER_USER }}/tensorflow-model_faces:${{ github.sha }}
 
-    - name: Build the custom Docker image
-      run: docker commit --change "ENV MODEL_NAME ${{ secrets.MODEL_NAME }}" serving_base ${{ secrets.DOCKER_USER }}/tensorflow-${{ secrets.MODEL_NAME }}:${{ github.sha }}
+      - name: Docker login
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
 
-    - name: Docker Push
-      run: docker push ${{ secrets.DOCKER_USER }}/tensorflow-${{ secrets.MODEL_NAME }}:${{ github.sha }}
+      - name: Docker Push
+        run: |
+          echo "Pushing Docker image to DockerHub..."
+          docker push ${{ secrets.DOCKER_USER }}/tensorflow-model_faces:${{ github.sha }}
