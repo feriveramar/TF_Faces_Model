@@ -39,16 +39,25 @@ jobs:
 
       - name: Prepare model directory with versioning
         run: |
-          echo "Locating saved_model.pb and preparing versioned directory..."
-          mkdir -p faces-model/1
+          echo "Preparing versioned model directory..."
+          TEMP_DIR=$(mktemp -d) # Crear un directorio temporal
           SAVED_MODEL_PATH=$(find faces-model/ -name "saved_model.pb" -printf '%h\n' | head -n 1)
+          
           if [ -z "$SAVED_MODEL_PATH" ]; then
             echo "Error: saved_model.pb not found!"
             exit 1
           fi
+
           echo "Found model at: $SAVED_MODEL_PATH"
+
+          # Limpiar y recrear el directorio de versión
+          rm -rf faces-model/1
+          mkdir -p faces-model/1
+
+          # Copiar solo los archivos necesarios al destino
           cp -r $SAVED_MODEL_PATH/* faces-model/1/
-          ls -R faces-model/
+          echo "Versioned directory contents:"
+          ls -R faces-model/1/
 
       - name: Validate model directory
         run: |
