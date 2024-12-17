@@ -13,12 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Hello world
-        run: echo "hello world workflows …"
-
-      - name: Show Python version
-        run: python --version
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -30,52 +24,42 @@ jobs:
           tar -xzvf caras_fotos.tgz
 
       - name: Execute model training
-        run: python faces_model.py
-
-      - name: Inspect model directory
         run: |
-          echo "Inspecting model directory after training..."
-          ls -R faces-model/
+          echo "Running model training..."
+          python faces_model.py
 
-      - name: Prepare model directory with versioning
+      - name: Verify model training output
         run: |
-          echo "Preparing versioned model directory..."
-          TEMP_DIR=$(mktemp -d) # Crear un directorio temporal
-          SAVED_MODEL_PATH=$(find faces-model/ -name "saved_model.pb" -printf '%h\n' | head -n 1)
-          
-          if [ -z "$SAVED_MODEL_PATH" ]; then
+          echo "Verifying model output..."
+          if [ ! -f "faces-model/saved_model.pb" ]; then
             echo "Error: saved_model.pb not found!"
             exit 1
           fi
+          echo "Model saved_model.pb found successfully."
 
-          echo "Found model at: $SAVED_MODEL_PATH"
-
-          # Limpiar y recrear el directorio de versión
+      - name: Prepare versioned model directory
+        run: |
+          echo "Preparing versioned model directory..."
           rm -rf faces-model/1
           mkdir -p faces-model/1
-
-          # Copiar solo los archivos necesarios al destino
-          cp -r $SAVED_MODEL_PATH/* faces-model/1/
+          cp -r faces-model/* faces-model/1/
           echo "Versioned directory contents:"
           ls -R faces-model/1/
 
       - name: Validate model directory
         run: |
-          echo "Validating trained model directory..."
+          echo "Validating model directory..."
           ls -R faces-model/
-
-      - name: Show root directory
-        run: ls -la
 
       - name: Download and run the Docker base image
         run: docker run -d --name serving_base tensorflow/serving
 
-      - name: Copy model to the Docker image
+      - name: Copy model to the Docker container
         run: |
           echo "Copying model to Docker container..."
           docker cp faces-model/1/ serving_base:/models/model_faces
 
-      - name: Build the custom Docker image
+      - name: Build custom Docker image
         run: |
           echo "Building Docker image..."
           docker commit --change "ENV MODEL_NAME model_faces" serving_base ${{ secrets.DOCKER_USER }}/tensorflow-model_faces:${{ github.sha }}
@@ -85,6 +69,7 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
+          echo "Logging into DockerHub..."
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
 
       - name: Docker Push
